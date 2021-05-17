@@ -11,12 +11,34 @@ func (ctx *Context) TestGrantAccessCmd() {
 
 	assert := assert.New(ctx.T())
 
+	// Should fail if namespace doesn't exist.
+	rootCmd.SetArgs([]string{
+		"--repodir", ctx.dir,
+		"grant-access", "testproject", "testgroup2", "admin",
+	})
+	assert.PanicsWithError("Namespace testproject does not exist", func() {
+		rootCmd.Execute()
+	})
+
+	// ---
+
 	rootCmd.SetArgs([]string{
 		"--repodir", ctx.dir,
 		"create-project", "testproject", "testgroup",
 	})
 	err = rootCmd.Execute()
 	assert.Nil(err)
+
+	// --
+
+	// Should fail if target group doesn't exist
+	rootCmd.SetArgs([]string{
+		"--repodir", ctx.dir,
+		"grant-access", "testproject", "testgroup2", "admin",
+	})
+	assert.PanicsWithError("Group testgroup2 does not exist", func() {
+		rootCmd.Execute()
+	})
 
 	// ---
 

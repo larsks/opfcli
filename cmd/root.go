@@ -20,6 +20,7 @@ var config = viper.New()
 var cfgFile string
 var appName string
 var repoDirectory string
+var loglevel int
 
 var rootCmd = &cobra.Command{
 	Use:   "opfcli",
@@ -32,11 +33,16 @@ configuration repository.`,
 
 // Execute processes the opfcli command line.
 func Execute() {
+	if loglevel < 3 {
+		defer recoverAndLog()
+	}
 	cobra.CheckErr(rootCmd.Execute())
 }
 
 func init() {
-	loglevel, err := strconv.Atoi(os.Getenv("OPF_LOGLEVEL"))
+	var err error
+
+	loglevel, err = strconv.Atoi(os.Getenv("OPF_LOGLEVEL"))
 	if err != nil {
 		loglevel = 1
 	}

@@ -20,7 +20,7 @@ var createProjectCmd = &cobra.Command{
 
 		createNamespace(projectName, projectOwner, projectDescription)
 		createAdminRoleBinding(projectName, projectOwner)
-		createGroup(projectOwner)
+		createGroup(projectOwner, true)
 	},
 }
 

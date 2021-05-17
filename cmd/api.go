@@ -16,7 +16,9 @@ func createNamespace(projectName, projectOwner, projectDescription string) {
 	path := filepath.Join(repoDirectory, appName, namespacePath, projectName, "namespace.yaml")
 
 	if utils.PathExists(filepath.Dir(path)) {
-		log.Fatalf("namespace %s already exists", projectName)
+		panic(NamespaceExistsError{
+			Name: projectName,
+		})
 	}
 
 	ns := models.NewNamespace(projectName, projectOwner, projectDescription)
@@ -24,12 +26,18 @@ func createNamespace(projectName, projectOwner, projectDescription string) {
 
 	log.Printf("writing namespace definition to %s", filepath.Dir(path))
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		log.Fatalf("failed to create namespace directory: %v", err)
+		panic(DirectoryCreateFailed{PathError{
+			Err:  err,
+			Path: filepath.Dir(path),
+		}})
 	}
 
 	err := ioutil.WriteFile(path, nsOut, 0644)
 	if err != nil {
-		log.Fatalf("failed to write namespace file: %v", err)
+		panic(WriteFailed{PathError{
+			Err:  err,
+			Path: path,
+		}})
 	}
 
 	utils.WriteKustomization(
@@ -63,12 +71,18 @@ func createRoleBinding(projectName, groupName, roleName string) {
 
 	log.Printf("writing rbac definition to %s", filepath.Dir(path))
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		log.Fatalf("failed to create rolebinding directory: %v", err)
+		panic(DirectoryCreateFailed{PathError{
+			Err:  err,
+			Path: filepath.Dir(path),
+		}})
 	}
 
 	err := ioutil.WriteFile(path, rbacOut, 0644)
 	if err != nil {
-		log.Fatalf("failed to write rbac: %v", err)
+		panic(WriteFailed{PathError{
+			Err:  err,
+			Path: path,
+		}})
 	}
 
 	utils.WriteComponent(
@@ -81,13 +95,18 @@ func createAdminRoleBinding(projectName, projectOwner string) {
 	createRoleBinding(projectName, projectOwner, "admin")
 }
 
-func createGroup(projectOwner string) {
+func createGroup(projectOwner string, existsOk bool) {
 	appName := config.GetString("app-name")
 	path := filepath.Join(repoDirectory, appName, groupPath, projectOwner, "group.yaml")
 
 	if utils.PathExists(filepath.Dir(path)) {
-		log.Printf("group already exists (continuing)")
-		return
+		if existsOk {
+			log.Infof("Group %s already exists", projectOwner)
+			return
+		}
+		panic(GroupExistsError{
+			Name: projectOwner,
+		})
 	}
 
 	group := models.NewGroup(projectOwner)
@@ -95,12 +114,18 @@ func createGroup(projectOwner string) {
 
 	log.Printf("writing group definition to %s", filepath.Dir(path))
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		log.Fatalf("failed to create group directory: %v", err)
+		panic(DirectoryCreateFailed{PathError{
+			Err:  err,
+			Path: filepath.Dir(path),
+		}})
 	}
 
 	err := ioutil.WriteFile(path, groupOut, 0644)
 	if err != nil {
-		log.Fatalf("failed to write group: %v", err)
+		panic(WriteFailed{PathError{
+			Err:  err,
+			Path: path,
+		}})
 	}
 
 	utils.WriteKustomization(
@@ -123,11 +148,15 @@ func addGroupRBAC(projectName, groupName, roleName string) {
 	)
 
 	if !utils.PathExists(nsPath) {
-		log.Fatalf("namespace %s does not exist", projectName)
+		panic(NamespaceMissingError{
+			Name: projectName,
+		})
 	}
 
 	if !utils.PathExists(groupPath) {
-		log.Fatalf("group %s does not exist", groupName)
+		panic(GroupMissingError{
+			Name: groupName,
+		})
 	}
 
 	createRoleBinding(projectName, groupName, roleName)

@@ -28,4 +28,13 @@ func (ctx *Context) TestCreateProjectCmd() {
 	for _, path := range expectedPaths {
 		assert.FileExists(filepath.Join(ctx.dir, path))
 	}
+
+	// Should fail if namespace already exists
+	rootCmd.SetArgs([]string{
+		"--repodir", ctx.dir,
+		"create-project", "testproject", "testgroup",
+	})
+	assert.PanicsWithError("Namespace testproject already exists", func() {
+		rootCmd.Execute()
+	})
 }

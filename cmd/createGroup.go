@@ -12,7 +12,7 @@ var createGroupCmd = &cobra.Command{
 Create the group resource and associated kustomization file`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		createGroup(args[0])
+		createGroup(args[0], false)
 	},
 }
 

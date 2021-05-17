@@ -21,4 +21,10 @@ func (ctx *Context) TestCreateGroupCmd() {
 	for _, path := range expectedPaths {
 		assert.FileExists(filepath.Join(ctx.dir, path))
 	}
+
+	// Should fail if the group already exists.
+	rootCmd.SetArgs([]string{"--repodir", ctx.dir, "create-group", "testgroup"})
+	assert.PanicsWithError("Group testgroup already exists", func() {
+		rootCmd.Execute()
+	})
 }

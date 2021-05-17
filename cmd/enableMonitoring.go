@@ -16,7 +16,9 @@ func addMonitoringRBAC(projectName string) {
 	path := filepath.Join(repoDirectory, appName, namespacePath, projectName)
 
 	if !utils.PathExists(path) {
-		log.Fatalf("namespace %s does not exist", projectName)
+		panic(NamespaceMissingError{
+			Name: projectName,
+		})
 	}
 
 	log.Printf("enabling monitoring on namespace %s", projectName)
@@ -29,7 +31,10 @@ func addMonitoringRBAC(projectName string) {
 	// NB: if the specified component does not exist, kustomize will fail to
 	// edit the file and emit a log message but will not return an error code.
 	if err := kustomize.Run(); err != nil {
-		log.Fatalf("failed to edit kustomization: %v", err)
+		panic(CommandFailedError{
+			Err:     err,
+			Command: "kustomize",
+		})
 	}
 }
 
