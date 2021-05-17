@@ -4,6 +4,11 @@ repos:
     rev: v3.3.0
     hooks:
       - id: trailing-whitespace
+        exclude: README.md
+
+  - repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v3.3.0
+    hooks:
       - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: check-added-large-files
