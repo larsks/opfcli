@@ -24,6 +24,8 @@ func (ctx *Context) TestAddComponent() {
 		"testproject",
 		"testgroup",
 		"test description",
+		"",
+		false,
 	)
 	assert.Nil(err)
 
