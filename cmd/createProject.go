@@ -20,12 +20,29 @@ func NewCmdCreateProject(api *api.API) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			projectName := args[0]
 			projectOwner := args[1]
-			projectDescription := cmd.Flag("description").Value.String()
+			projectDescription, err := cmd.Flags().GetString("description")
+			if err != nil {
+				return err
+			}
+			disableLimitrange, err := cmd.Flags().GetBool("no-limitrange")
+			if err != nil {
+				return err
+			}
+			projectQuota, err := cmd.Flags().GetString("quota")
+			if err != nil {
+				return err
+			}
 
-			return api.CreateProject(projectName, projectOwner, projectDescription)
+			return api.CreateProject(
+				projectName, projectOwner, projectDescription,
+				projectQuota,
+				disableLimitrange,
+			)
 		},
 	}
 
 	cmd.Flags().StringP("description", "d", "", "Team description")
+	cmd.Flags().StringP("quota", "q", "", "Set a quota on this project")
+	cmd.Flags().BoolP("no-limitrange", "n", false, "Do not set a limitrange on this project")
 	return cmd
 }
