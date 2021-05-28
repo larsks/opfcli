@@ -8,8 +8,13 @@ package main
 
 import (
 	"github.com/operate-first/opfcli/cmd"
+	"github.com/operate-first/opfcli/utils"
+	"github.com/spf13/cobra"
 )
 
 func main() {
-	cmd.Execute()
+	utils.ConfigureLogging()
+
+	cmd := cmd.NewCmdRoot()
+	cobra.CheckErr(cmd.Execute())
 }
