@@ -1,6 +1,6 @@
 repos:
   - repo: git://github.com/pre-commit/pre-commit-hooks
-    rev: v3.3.0
+    rev: v4.0.1
     hooks:
       - id: trailing-whitespace
         exclude: README.md
@@ -13,7 +13,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.25.0
+    rev: v1.26.1
     hooks:
       - id: yamllint
         files: \.(yaml|yml)$
@@ -21,7 +21,7 @@ repos:
         entry: yamllint --strict
 
   - repo: git://github.com/dnephin/pre-commit-golang
-    rev: f780b51bd3
+    rev: v0.4.0
     hooks:
       - id: go-fmt
       - id: golangci-lint
