@@ -6,28 +6,49 @@ on:
     tags-ignore:
       - 'v*'
   pull_request:
+  workflow_dispatch:
 
 jobs:
   precommit:
     runs-on: ubuntu-latest
-    container:
-      # https://github.com/larsks/opf-go-precommit
-      image: quay.io/larsks/opf-go-precommit:6fb0601
-      env:
-        XDG_CACHE_HOME: /cache
-        GOCACHE: /cache/go-build
-        GOMODCACHE: /cache/go-mod
-        PRE_COMMIT_HOME: /cache/pre-commit
-      volumes:
-        - /cache
+    env:
+      XDG_CACHE_HOME: /tmp/cache
+      GOCACHE: /tmp/cache/go-build
+      GOMODCACHE: /tmp/cache/go-mod
+      PRE_COMMIT_HOME: /tmp/cache/pre-commit
+      GOLANGCI_LINT_VERSION: 1.42.0
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '^3.9'
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16'
 
       - name: Activate cache
         uses: actions/cache@v2
         with:
-          path: /cache
-          key: ${{ runner.os }}-cache-${{ hashFiles('**/go.sum', '.pre-commit-config.yaml') }}
+          path: /tmp/cache
+          key: ${{ runner.os }}-cache-${{ hashFiles('**/go.sum', '.pre-commit-config.yaml') }}-${{ env.GOLANGCI_LINT_VERSION }}
+
+      - name: Install golangci-lint
+        run: |
+          if ! [ -f "$XDG_CACHE_HOME/bin/golangci-lint" ]; then
+            mkdir -p $XDG_CACHE_HOME/bin
+            curl -Lsf -o golangci-lint.tar.gz \
+              https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
+
+            tar tf golangci-lint.tar.gz
+            tar -C $XDG_CACHE_HOME/bin --strip-components 1 -x -f golangci-lint.tar.gz --wildcards '*/golangci-lint'
+          fi
+
+      - name: Install pre-commit
+        run: pip install pre-commit
 
       - name: Run pre-commit checks
-        run: pre-commit run --all-files
+        run: |
+          export PATH=$XDG_CACHE_HOME/bin:$PATH
+          pre-commit run --all-files
